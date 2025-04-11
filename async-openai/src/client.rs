@@ -5,6 +5,7 @@ use futures::{stream::StreamExt, Stream};
 use reqwest::multipart::Form;
 use reqwest_eventsource::{Event, EventSource, RequestBuilderExt};
 use serde::{de::DeserializeOwned, Serialize};
+use tracing::info;
 
 use crate::{
     config::{Config, OpenAIConfig},
@@ -378,6 +379,9 @@ impl<C: Config> Client<C> {
     {
         let bytes = self.execute_raw(request_maker).await?;
 
+        let bytes_str = String::from_utf8_lossy(&bytes);
+        info!("async-openai -- Response: {}", bytes_str);
+
         let response: O = serde_json::from_slice(bytes.as_ref())
             .map_err(|e| map_deserialization_error(e, bytes.as_ref()))?;
 
@@ -475,6 +479,8 @@ where
                         if message.data == "[DONE]" {
                             break;
                         }
+
+                        info!("async-openai -- (Message) Response: {}", &message.data);
 
                         let response = match serde_json::from_str::<O>(&message.data) {
                             Err(e) => Err(map_deserialization_error(e, message.data.as_bytes())),
