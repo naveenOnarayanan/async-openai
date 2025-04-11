@@ -69,8 +69,9 @@ pub(crate) struct WrappedError {
 
 pub(crate) fn map_deserialization_error(e: serde_json::Error, bytes: &[u8]) -> OpenAIError {
     tracing::error!(
-        "failed deserialization of: {}",
-        String::from_utf8_lossy(bytes)
+        "failed deserialization of: {} due to error: {}",
+        String::from_utf8_lossy(bytes),
+        e
     );
     OpenAIError::JSONDeserialize(e)
 }
