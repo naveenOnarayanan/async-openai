@@ -337,6 +337,11 @@ impl<C: Config> Client<C> {
                 .map_err(OpenAIError::Reqwest)
                 .map_err(backoff::Error::Permanent)?;
 
+
+            // Log the bytes as string
+            let bytes_str = String::from_utf8_lossy(bytes.as_ref());
+            tracing::debug!("async-openai -- Response bytes execute_raw: {}", bytes_str);
+
             // Deserialize response body from either error object or actual response object
             if !status.is_success() {
                 let wrapped_error: WrappedError = serde_json::from_slice(bytes.as_ref())
